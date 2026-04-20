@@ -1,0 +1,168 @@
+{
+    "version": "1.0",
+    "description": "Scoring logic for car recommendations. Each car starts at 0, earns points across 9 dimensions. Weights are defaults; boosts increase them based on user answers. Final score is sum of (weight * dimension_score), where dimension_score is 0-1 normalized across candidate cars.",
+  
+    "dimensions": {
+      "price_fit": {
+        "default_weight": 20,
+        "description": "Closer to user's comfortable budget = higher score. Cars above comfortable but within stretch are penalized proportionally.",
+        "scoring_method": "price_proximity",
+        "notes": "Score = 1 if on_road_price <= comfortable_budget, else linearly decays to 0 at stretch_budget."
+      },
+      "safety": {
+        "default_weight": 15,
+        "description": "Based on safety rating (stars) and airbag count.",
+        "scoring_method": "normalized_rating",
+        "source_fields": ["safety_rating", "airbag_count"]
+      },
+      "space_practicality": {
+        "default_weight": 15,
+        "description": "Combines boot space, legroom, and seating flexibility.",
+        "scoring_method": "normalized_composite",
+        "source_fields": ["boot_space_liters", "seating_capacity"]
+      },
+      "ride_quality": {
+        "default_weight": 10,
+        "description": "Ground clearance and suspension type. Higher clearance = better for Indian roads.",
+        "scoring_method": "normalized_rating",
+        "source_fields": ["ground_clearance_mm"]
+      },
+      "running_cost": {
+        "default_weight": 10,
+        "description": "Fuel economy and service cost index.",
+        "scoring_method": "normalized_rating",
+        "source_fields": ["mileage_kmpl", "service_cost_index"]
+      },
+      "city_maneuverability": {
+        "default_weight": 10,
+        "description": "Smaller turning radius, compact length, and good visibility score higher.",
+        "scoring_method": "inverse_normalized",
+        "source_fields": ["turning_radius_m", "length_mm"]
+      },
+      "highway_capability": {
+        "default_weight": 10,
+        "description": "Power (bhp), torque, and comfort features for long drives.",
+        "scoring_method": "normalized_rating",
+        "source_fields": ["power_bhp", "torque_nm"]
+      },
+      "reliability": {
+        "default_weight": 5,
+        "description": "Brand reliability index (platform-maintained list, 0-1 scale).",
+        "scoring_method": "direct",
+        "source_fields": ["brand_reliability_index"]
+      },
+      "resale_value": {
+        "default_weight": 5,
+        "description": "Expected resale value after 5 years as % of on-road price.",
+        "scoring_method": "direct",
+        "source_fields": ["resale_value_5yr_percent"]
+      }
+    },
+  
+    "boost_rules": [
+      {
+        "condition": { "question": "regret_factors", "includes": "not_safe" },
+        "dimension": "safety",
+        "boost": 15,
+        "note": "Safety becomes weight 30 when user fears feeling unsafe"
+      },
+      {
+        "condition": { "question": "regret_factors", "includes": "cramped" },
+        "dimension": "space_practicality",
+        "boost": 10
+      },
+      {
+        "condition": { "question": "passengers", "equals": "full_household" },
+        "dimension": "space_practicality",
+        "boost": 10
+      },
+      {
+        "condition": { "question": "passengers", "equals": "small_family" },
+        "dimension": "space_practicality",
+        "boost": 5
+      },
+      {
+        "condition": { "question": "usage_terrain", "includes": "bad_roads" },
+        "dimension": "ride_quality",
+        "boost": 10
+      },
+      {
+        "condition": { "question": "usage_terrain", "includes": "hills_rain" },
+        "dimension": "ride_quality",
+        "boost": 5
+      },
+      {
+        "condition": { "question": "regret_factors", "includes": "poor_terrain" },
+        "dimension": "ride_quality",
+        "boost": 10
+      },
+      {
+        "condition": { "question": "regret_factors", "includes": "expensive_to_run" },
+        "dimension": "running_cost",
+        "boost": 10
+      },
+      {
+        "condition": { "question": "usage_terrain", "includes": "dense_city" },
+        "dimension": "city_maneuverability",
+        "boost": 10
+      },
+      {
+        "condition": { "question": "usage_terrain", "includes": "short_errands" },
+        "dimension": "city_maneuverability",
+        "boost": 5
+      },
+      {
+        "condition": { "question": "usage_terrain", "includes": "highways" },
+        "dimension": "highway_capability",
+        "boost": 10
+      },
+      {
+        "condition": { "question": "non_negotiables", "includes": "reliable_brand" },
+        "dimension": "reliability",
+        "boost": 10
+      },
+      {
+        "condition": { "question": "regret_factors", "includes": "depreciated" },
+        "dimension": "resale_value",
+        "boost": 10
+      },
+      {
+        "condition": { "question": "non_negotiables", "includes": "good_resale" },
+        "dimension": "resale_value",
+        "boost": 10
+      }
+    ],
+  
+    "hard_filter_rules": {
+      "description": "Cars failing any of these are removed before scoring.",
+      "filters": [
+        {
+          "rule": "on_road_price <= budget.stretch",
+          "source": "budget question"
+        },
+        {
+          "rule": "seating_capacity >= passengers.min_seating",
+          "source": "passengers question"
+        },
+        {
+          "rule": "fuel_type IN fuel.matches_fuel_types",
+          "source": "fuel question"
+        },
+        {
+          "rule": "transmission_type IN transmission.matches_transmission_types",
+          "source": "transmission question"
+        },
+        {
+          "rule": "car must have ALL features listed in non_negotiables[].required_feature (where not null)",
+          "source": "non_negotiables question"
+        }
+      ]
+    },
+  
+    "output": {
+      "top_n": 3,
+      "tie_breaker": "lower on_road_price wins",
+      "minimum_results_before_fallback": 1,
+      "fallback_behavior": "If <3 cars pass hard filter, return whatever passes with banner. If 0 pass, return empty state with identified blocker."
+    }
+  }

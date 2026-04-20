@@ -1,0 +1,142 @@
+{
+    "version": "1.0",
+    "questions": [
+      {
+        "id": "budget",
+        "order": 1,
+        "type": "budget_slider",
+        "required": true,
+        "title": "What's your budget?",
+        "subtitle": "We'll show cars that fit comfortably, and a few that stretch.",
+        "config": {
+          "min": 300000,
+          "max": 3500000,
+          "step": 50000,
+          "currency": "INR",
+          "default_comfortable": 1000000,
+          "default_stretch": 1500000,
+          "price_type_toggle": {
+            "default": "on_road",
+            "options": ["on_road", "ex_showroom"]
+          }
+        }
+      },
+      {
+        "id": "passengers",
+        "order": 2,
+        "type": "single_select",
+        "required": true,
+        "title": "Who's usually in the car?",
+        "subtitle": "Think about your typical day, not edge cases.",
+        "options": [
+          {
+            "id": "solo",
+            "label": "Just me (maybe one passenger)",
+            "min_seating": 2
+          },
+          {
+            "id": "couple",
+            "label": "Me and my partner",
+            "min_seating": 4
+          },
+          {
+            "id": "small_family",
+            "label": "Small family — 3 to 4 people, occasional guests",
+            "min_seating": 5
+          },
+          {
+            "id": "full_household",
+            "label": "Full household — 5+ regularly, including kids or elderly",
+            "min_seating": 7
+          },
+          {
+            "id": "varies",
+            "label": "Varies a lot — need flexibility",
+            "min_seating": 5
+          }
+        ]
+      },
+      {
+        "id": "usage_terrain",
+        "order": 3,
+        "type": "multi_select",
+        "required": true,
+        "max_selections": 2,
+        "title": "Where does this car mostly live?",
+        "subtitle": "Pick up to 2.",
+        "options": [
+          { "id": "dense_city", "label": "Dense city traffic — parking is a pain" },
+          { "id": "highways", "label": "Highways and long drives" },
+          { "id": "bad_roads", "label": "Bad roads, potholes, or unpaved stretches" },
+          { "id": "hills_rain", "label": "Hills or heavy rain regularly" },
+          { "id": "short_errands", "label": "Mostly short errands close to home" }
+        ]
+      },
+      {
+        "id": "regret_factors",
+        "order": 4,
+        "type": "multi_select",
+        "required": true,
+        "max_selections": 3,
+        "title": "What would make you regret this purchase in 2 years?",
+        "subtitle": "Pick up to 3. This helps us understand what matters most.",
+        "options": [
+          { "id": "cramped", "label": "Felt cramped or impractical" },
+          { "id": "expensive_to_run", "label": "Expensive to run or service" },
+          { "id": "not_safe", "label": "Didn't feel safe enough" },
+          { "id": "boring", "label": "Boring or didn't turn heads" },
+          { "id": "poor_terrain", "label": "Couldn't handle rough roads or long trips" },
+          { "id": "depreciated", "label": "Depreciated too fast when I tried to sell" },
+          { "id": "too_much_car", "label": "Too much car for what I actually needed" }
+        ]
+      },
+      {
+        "id": "fuel",
+        "order": 5,
+        "type": "single_select",
+        "required": true,
+        "title": "Fuel preference?",
+        "subtitle": null,
+        "options": [
+          { "id": "petrol", "label": "Petrol", "matches_fuel_types": ["petrol"] },
+          { "id": "diesel", "label": "Diesel", "matches_fuel_types": ["diesel"] },
+          { "id": "hybrid", "label": "Hybrid", "matches_fuel_types": ["hybrid", "mild_hybrid", "strong_hybrid"] },
+          { "id": "electric", "label": "Electric", "matches_fuel_types": ["electric"] },
+          { "id": "no_preference", "label": "No strong preference — recommend what fits", "matches_fuel_types": ["petrol", "diesel", "hybrid", "mild_hybrid", "strong_hybrid", "electric", "cng"] }
+        ]
+      },
+      {
+        "id": "transmission",
+        "order": 6,
+        "type": "single_select",
+        "required": true,
+        "title": "Transmission?",
+        "subtitle": null,
+        "options": [
+          { "id": "manual", "label": "Manual", "matches_transmission_types": ["manual"] },
+          { "id": "automatic", "label": "Automatic", "matches_transmission_types": ["automatic", "amt", "cvt", "dct", "torque_converter"] },
+          { "id": "either", "label": "Either — whichever is better for the car", "matches_transmission_types": ["manual", "automatic", "amt", "cvt", "dct", "torque_converter"] }
+        ]
+      },
+      {
+        "id": "non_negotiables",
+        "order": 7,
+        "type": "multi_select_chips",
+        "required": false,
+        "max_selections": null,
+        "title": "Anything non-negotiable?",
+        "subtitle": "Skip if nothing is a hard requirement.",
+        "options": [
+          { "id": "sunroof", "label": "Sunroof", "required_feature": "sunroof" },
+          { "id": "six_airbags", "label": "6 airbags or more", "required_feature": "airbags_min_6" },
+          { "id": "camera_360", "label": "360° camera", "required_feature": "camera_360" },
+          { "id": "ventilated_seats", "label": "Ventilated seats", "required_feature": "ventilated_seats" },
+          { "id": "adas", "label": "ADAS features", "required_feature": "adas" },
+          { "id": "third_row", "label": "Third row seating", "required_feature": "third_row_seating" },
+          { "id": "good_resale", "label": "Good resale value", "required_feature": null, "soft_boost": "resale" },
+          { "id": "reliable_brand", "label": "Known reliable brand", "required_feature": null, "soft_boost": "reliability" },
+          { "id": "surprise_me", "label": "None of these — surprise me", "required_feature": null }
+        ]
+      }
+    ]
+  }
