@@ -27,9 +27,7 @@ CorsOrigins = Annotated[list[str], BeforeValidator(_split_cors)]
 _DEFAULT_CORS = (
     "http://localhost:3000,"
     "http://127.0.0.1:3000,"
-    "http://localhost:3001,"
-    "http://localhost:3002,"
-    "http://localhost:3003"
+    "https://carparkho.vercel.app"
 )
 
 
