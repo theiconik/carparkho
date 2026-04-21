@@ -1,7 +1,4 @@
 - Feedback from user
-- Build more dataset + DB usage
-- Chatbot for conversational decision making
-- UI polishing
 - Build a larger dataset + DB usage
 - Chatbot for conversational decision making
 - UI polishing
