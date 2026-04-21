@@ -1,15 +1,18 @@
 """
 Single OpenRouter API call to generate plain-language explanations for top 3 cars.
-Falls back to a template string if the call fails or exceeds 3 seconds.
+Falls back to a template string if the call fails or times out.
 """
 
+from __future__ import annotations
+
 import json
-import os
+import logging
+
 import httpx
 
-OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
-MODEL = os.getenv("OPENROUTER_MODEL", "google/gemini-2.0-flash-001")
-TIMEOUT_SECONDS = 30.0
+from settings import Settings
+
+logger = logging.getLogger(__name__)
 
 DIMENSION_LABELS = {
     "price_fit": "price fit",
@@ -75,53 +78,71 @@ Example format: ["Explanation for car 1.", "Explanation for car 2.", "Explanatio
 async def generate_explanations(
     ranked_cars: list[tuple[dict, float, list[str]]],
     request_data: dict,
+    settings: Settings,
 ) -> list[str]:
     """
     Returns a list of explanation strings, one per car.
     Falls back to template strings on any error or timeout.
     """
-    api_key = os.getenv("OPENROUTER_API_KEY")
+    api_key = settings.openrouter_api_key
 
     if not api_key:
-        print("No API key found, falling back to template explanations")
+        logger.info("OpenRouter API key not set; using template explanations")
         return [_template_explanation(car, dims) for car, _, dims in ranked_cars]
 
     prompt = _build_prompt(ranked_cars, request_data)
+    timeout = httpx.Timeout(settings.openrouter_timeout_seconds)
 
     try:
-        async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS) as client:
+        async with httpx.AsyncClient(timeout=timeout) as client:
             response = await client.post(
-                OPENROUTER_API_URL,
+                settings.openrouter_base_url,
                 headers={
                     "Authorization": f"Bearer {api_key}",
                     "Content-Type": "application/json",
                 },
                 json={
-                    "model": MODEL,
+                    "model": settings.openrouter_model,
                     "messages": [{"role": "user", "content": prompt}],
                     "temperature": 0.7,
                 },
             )
             if response.status_code != 200:
-                print(f"LLM error {response.status_code}: {response.text}")
-                raise httpx.HTTPStatusError("bad status", request=response.request, response=response)
-            content = response.json()["choices"][0]["message"]["content"].strip()
-            print(f"LLM Response: {response.json()}")
+                logger.warning(
+                    "OpenRouter error status=%s body=%s",
+                    response.status_code,
+                    response.text[:2000],
+                )
+            else:
+                try:
+                    payload = response.json()
+                except json.JSONDecodeError:
+                    logger.warning("OpenRouter returned non-JSON body (status 200)")
+                else:
+                    logger.debug("OpenRouter response: %s", json.dumps(payload, ensure_ascii=False))
+                    content = payload["choices"][0]["message"]["content"].strip()
 
-            # Strip markdown code fence if present (e.g. ```json ... ```)
-            if content.startswith("```"):
-                content = content.split("```", 2)[1]
-                if content.startswith("json"):
-                    content = content[4:]
-                content = content.strip()
-                if content.endswith("```"):
-                    content = content[:-3].strip()
+                    if content.startswith("```"):
+                        content = content.split("```", 2)[1]
+                        if content.startswith("json"):
+                            content = content[4:]
+                        content = content.strip()
+                        if content.endswith("```"):
+                            content = content[:-3].strip()
 
-            explanations = json.loads(content)
-            if isinstance(explanations, list) and len(explanations) == len(ranked_cars):
-                return explanations
+                    explanations = json.loads(content)
+                    if isinstance(explanations, list) and len(explanations) == len(ranked_cars):
+                        return explanations
+                    logger.warning(
+                        "OpenRouter returned unexpected explanation shape: type=%s len=%s expected_len=%s",
+                        type(explanations).__name__,
+                        len(explanations) if isinstance(explanations, list) else None,
+                        len(ranked_cars),
+                    )
 
+    except json.JSONDecodeError as e:
+        logger.error("Failed to parse LLM JSON output: %s", e)
     except Exception as e:
-        print(f"LLM call failed: {e}")
+        logger.error("LLM call failed: %s", e)
 
     return [_template_explanation(car, dims) for car, _, dims in ranked_cars]

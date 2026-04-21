@@ -8,7 +8,7 @@ import pytest
 from scorer import score_and_rank, _compute_weights
 from models import BudgetAnswers, RecommendRequest
 
-ROOT = Path(__file__).parent.parent.parent
+ROOT = Path(__file__).parent.parent
 SCORING_CONFIG = json.loads((ROOT / "scoring-config.json").read_text())
 
 

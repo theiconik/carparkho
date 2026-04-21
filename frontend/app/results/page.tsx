@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import CarCard from "@/components/CarCard";
 import EmptyState from "@/components/EmptyState";
+import { RESULTS_STORAGE_KEY } from "@/lib/quiz/storage";
 import type { RecommendResponse } from "@/lib/types";
 
 type PageState =
@@ -13,7 +14,7 @@ type PageState =
   | { kind: "missing" };
 
 function loadResults(): PageState {
-  const raw = sessionStorage.getItem("carparkho_results");
+  const raw = sessionStorage.getItem(RESULTS_STORAGE_KEY);
   if (!raw) return { kind: "missing" };
   try {
     return { kind: "ready", data: JSON.parse(raw) };
@@ -33,7 +34,7 @@ export default function ResultsPage() {
   }, []);
 
   const handleStartOver = () => {
-    sessionStorage.removeItem("carparkho_results");
+    sessionStorage.removeItem(RESULTS_STORAGE_KEY);
     router.push("/");
   };
 
