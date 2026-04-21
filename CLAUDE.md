@@ -11,7 +11,7 @@ Car Parkho — a guided car recommender MVP. User answers 7 questions → determ
 - **Frontend:** Next.js (App Router), mobile-first, Tailwind CSS
 - **Backend:** FastAPI (Python), in-memory mock data (no DB)
 - **LLM:** OpenRouter API (`OPENROUTER_API_KEY` env var), model string is configurable — default `anthropic/claude-haiku-4-5`
-- **Config files (root):** `questions-config.json`, `scoring-config.json`, `cars-dataset.json` — backend loads these at startup
+- **Config files (`/backend`):** `questions-config.json`, `scoring-config.json`, `cars-dataset.json` — backend loads these at startup
 
 ## Dev Commands
 

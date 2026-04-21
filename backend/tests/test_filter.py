@@ -8,7 +8,7 @@ import pytest
 from filter import hard_filter
 from models import BudgetAnswers, RecommendRequest
 
-ROOT = Path(__file__).parent.parent.parent
+ROOT = Path(__file__).parent.parent
 QUESTIONS_CONFIG = json.loads((ROOT / "questions-config.json").read_text())
 
 

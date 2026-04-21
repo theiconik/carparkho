@@ -1,6 +1,5 @@
 - Feedback from user
-- Build dataset + DB usage
+- Build more dataset + DB usage
 - Chatbot for conversational decision making
 - UI polishing
-- Evals (LLM based system at least eventually)
-- 
+- Evals (LLM based system)
