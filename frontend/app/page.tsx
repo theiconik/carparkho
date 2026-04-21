@@ -22,7 +22,7 @@ export default function Home() {
         {/* Stats / Trust signals */}
         <div className="grid grid-cols-3 gap-4 border border-border rounded-[8px] p-4 bg-white">
           <div className="text-center">
-            <p className="text-charcoal text-lg font-bold">102</p>
+            <p className="text-charcoal text-lg font-bold">162</p>
             <p className="text-secondary text-xs mt-0.5">Cars</p>
           </div>
           <div className="text-center border-x border-border">
